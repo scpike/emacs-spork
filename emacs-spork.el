@@ -57,3 +57,5 @@
 (defun test-current-file ()
   (interactive)
   (sw-shell/commands spork-test-buffer (concat "testdrb " buffer-file-name)))
+
+(provide 'emacs-spork)
