@@ -7,7 +7,16 @@
 ;       Run all Unit/Functional/Integration tests
 ;       Run all tests, via some kind of directory traversing up and back down
 
+; The name of the buffer the tests will run in.
 (defvar spork-test-buffer "spork-tests")
+
+; This sw-* stuff is from
+;   http://curiousprogrammer.wordpress.com/2009/03/19/emacs-terminal-emulator/
+; It takes care of getting ansi-term up and running, and returning to the same
+; buffer for subsequent tests.
+
+; sw-basic-shell is modified to open the buffer in another window, so that your
+; tests pop up alongside the code.
 
 (defun sw-shell-get-process (buffer-name)
   (let ((buffer (get-buffer (concat "*" buffer-name "*"))))
