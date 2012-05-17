@@ -41,7 +41,7 @@
   ;; create the new buffer
   (if (sw-shell-exists-p buffer-name)
       (message "Buffer already exists")
-    (ansi-term "zsh" buffer-name))
+    (ansi-term "bash" buffer-name))
   (switch-to-buffer-other-window (concat "*" buffer-name "*")))
 
 (defun sw-shell/commands (buffer-name &rest commands)
