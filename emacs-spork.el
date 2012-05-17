@@ -9,6 +9,7 @@
 
 ; The name of the buffer the tests will run in.
 (defvar spork-test-buffer "spork-tests")
+(defvar emacs-spork-last-command nil)
 
 ; This sw-* stuff is from
 ;   http://curiousprogrammer.wordpress.com/2009/03/19/emacs-terminal-emulator/
@@ -48,14 +49,19 @@
   (sw-basic-shell buffer-name)
   (let ((proc (sw-shell-get-process buffer-name)))
     (dolist (cmd commands)
-      (term-simple-send proc cmd))))
+      (term-simple-send proc cmd)
+      (setq emacs-spork-last-command cmd))))
 
-(defun test-file (filename)
+(defun test-file (file-name)
   (interactive "FFile:")
-  (sw-shell/commands spork-test-buffer (concat "testdrb " filename) ))
+  (sw-shell/commands spork-test-buffer (concat "testdrb " file-name " | grep -v .rvm")))
 
 (defun test-current-file ()
   (interactive)
-  (sw-shell/commands spork-test-buffer (concat "testdrb " buffer-file-name)))
+  (test-file buffer-file-name))
+
+(defun test-redo ()
+  (interactive)
+  (sw-shell/commands spork-test-buffer emacs-spork-last-command))
 
 (provide 'emacs-spork)
