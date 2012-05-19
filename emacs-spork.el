@@ -115,7 +115,7 @@ simple algorithm that may grow over time if needed."
 (defun es-project-directory ()
   "search up from the current directory, looking for a project folder. project
 folder being a directory with a folder called test in it."
-  (locate-dominating-file "~/dev/firewater/app/" "test"))
+  (locate-dominating-file default-directory "test"))
 
 (defun es-run-tests-for-current-file ()
   "Run the tests that correspond to the current file.

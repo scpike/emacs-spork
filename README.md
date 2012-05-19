@@ -5,10 +5,13 @@ Run your tests from emacs with spork
 
 Run tests through spork from your emacs buffers.
 
-    test-file  ; Interactive function that prompts for a test file
+    es-test-file  ; Interactive function that prompts for a test file
 
-    test-current-file ; Run the file in the current buffer
+    es-test-current-file ; Run the file in the current buffer
 
+    es-redo-last-test ; Run the file in the current buffer
+
+    es-run-tests-for-current-file ; Figure out what tests to run based on the filepath (works for models, views, controllers)
 Uses `testdrb` to contact spork.
 
 Requirements
