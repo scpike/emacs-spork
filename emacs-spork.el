@@ -81,11 +81,6 @@ simple algorithm that may grow over time if needed."
 (defun es-test-files (filenames)
   (es-test-file (mapconcat 'identity filenames " ")))
 
-(mapconcat 'identity (list "sdf" "asdf") " ")
-
-(identity "asdf")
-(es-test-files (list "asdf" "sdfsdF"))
-
 (defun es-run-current-file ()
   (interactive)
   (es-test-file buffer-file-name))
