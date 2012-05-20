@@ -79,7 +79,7 @@ simple algorithm that may grow over time if needed."
     (sw-shell/commands spork-test-buffer cmd)))
 
 (defun es-test-files (filenames)
-  (test-file (mapconcat 'identity filenames " ")))
+  (es-test-file (mapconcat 'identity filenames " ")))
 
 (mapconcat 'identity (list "sdf" "asdf") " ")
 
@@ -182,9 +182,6 @@ folder being a directory with a folder called test in it."
 ;; (es-functional-test-for-model "sample_list")
 ;; (es-unit-test-for-model "sample_list")
 ;; (es-tests-for-model "sample_list")
-;; (es-tests-for-model "bh_data_file")
-;; (es-tests-for-model "data_file")
-;; (es-tests-for-model "dashboard")
 
 (defun es-model-for-file (filename)
   "Returns an underscored model name from a path name using rails' conventions"
@@ -195,7 +192,6 @@ folder being a directory with a folder called test in it."
         ((string-match ".*controllers/\\(.*\\)_controller.rb" filename)
          (es-singularize (match-string 1 filename)))))
 ;; (es-model-for-file "app/models/foo.rb")
-;; (es-model-for-file "app/models/anomalies/foo.rb")
 ;; (es-model-for-file "app/views/foos/index.html.erb")
 ;; (es-model-for-file "app/controllers/foos_controller.rb")
 
