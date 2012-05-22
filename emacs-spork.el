@@ -11,6 +11,8 @@
 (defvar spork-test-buffer "spork-tests")
 (defvar es-last-command nil)
 
+(defvar es-small-stack-trace t
+  "Hide .rvm (framework lines) from stack traces if t")
 
 ;; https://github.com/jimm/elisp/blob/master/emacs.el
 (defun es-singularize (str)
@@ -75,7 +77,10 @@ simple algorithm that may grow over time if needed."
 
 (defun es-test-file (file-name)
   (interactive "FFile:")
-  (let ((cmd (concat "testdrb " file-name)))
+  (let ((cmd
+         (cond (es-small-stack-trace
+                (concat "testdrb " file-name " | grep -v .rvm"))
+               (t (concat "testdrb " file-name)))))
     (sw-shell/commands spork-test-buffer cmd)))
 
 (defun es-test-files (filenames)
