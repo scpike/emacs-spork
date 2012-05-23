@@ -66,12 +66,14 @@ simple algorithm that may grow over time if needed."
   (if (sw-shell-exists-p buffer-name)
       (message "Buffer already exists")
     (ansi-term "bash" buffer-name))
-  (switch-to-buffer-other-window (concat "*" buffer-name "*")))
+                                        ;  (switch-to-buffer-other-window (concat "*" buffer-name "*"))
+  )
 
 (defun sw-shell/commands (buffer-name &rest commands)
   (sw-basic-shell buffer-name)
   (let ((proc (sw-shell-get-process buffer-name)))
     (dolist (cmd commands)
+      (term-simple-send proc "clear")
       (term-simple-send proc cmd)
       (setq es-last-command cmd))))
 
