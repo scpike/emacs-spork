@@ -73,8 +73,9 @@ simple algorithm that may grow over time if needed."
   (sw-basic-shell buffer-name)
   (let ((proc (sw-shell-get-process buffer-name)))
     (dolist (cmd commands)
-      (term-simple-send proc "clear")
-      (term-simple-send proc cmd)
+      ; (term-simple-send proc "clear")
+      ; (term-simple-send proc cmd)
+      (es-send-via-tmux cmd)
       (setq es-last-command cmd))))
 
 (defun es-test-file (file-name)
@@ -85,6 +86,20 @@ simple algorithm that may grow over time if needed."
                (t (concat "testdrb " file-name)))))
     (sw-shell/commands spork-test-buffer cmd)))
 
+(defun es-send-via-tmux (command)
+  (message (concat "running: " command))
+  (call-process "/usr/local/bin/tmux" nil "*scratch*" nil "send-keys" "-t 1" command "C-m")
+  )
+
+(defun es-run-ruby-on-file (filename)
+  (es-send-via-tmux (concat "ruby " filename))
+  )
+
+(defun es-run-ruby-on-current-file ()
+  (interactive)
+  (es-run-ruby-on-file buffer-file-name))
+
+; (es-send-via-tmux "echo hi")
 (defun es-test-files (filenames)
   (es-test-file (mapconcat 'identity filenames " ")))
 
