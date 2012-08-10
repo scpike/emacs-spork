@@ -95,6 +95,11 @@ simple algorithm that may grow over time if needed."
   (es-send-via-tmux (concat "ruby " filename))
   )
 
+(defun es-send-to-tmux (cmd)
+  (interactive "MCommand: ")
+  (es-send-via-tmux (concat cmd))
+  )
+
 (defun es-run-ruby-on-current-file ()
   (interactive)
   (es-run-ruby-on-file buffer-file-name))
@@ -140,13 +145,17 @@ folder being a directory with a folder called test in it."
    - Models: app/models/model_name.rb
      Unit,functional,parsers
    - Views: app/views/pluralized_name/thing.erb
-   - Controller app/contollers/pluralized_name.rb"
+   - Controller app/contollers/pluralized_name.rb
+   - Test  test/"
   (interactive)
-  (let ((model (es-model-for-file buffer-file-name)))
-    (let ((tests (es-tests-for-model model)))
-      (es-test-files tests)
-      (message (concat "Running tests for " model
-                       ": " (mapconcat 'identity tests ", "))))))
+  (cond ((string-match ".*test/\\([^/]*\\)" buffer-file-name)
+         (message (concat "Running " buffer-file-name))
+         (es-test-file buffer-file-name))
+        (t (let ((model (es-model-for-file buffer-file-name)))
+          (let ((tests (es-tests-for-model model)))
+            (es-test-files tests)
+            (message (concat "Running tests for " model
+                             ": " (mapconcat 'identity tests ", "))))))))
 
 (defun es-run-unit-test-for-current-file ()
   "Run the unit tests that corresponds to the current file.
