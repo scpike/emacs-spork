@@ -7,13 +7,24 @@
 ;       Run all Unit/Functional/Integration tests
 ;       Run all tests, via some kind of directory traversing up and back down
 
-; The name of the buffer the tests will run in.
-(defvar spork-test-buffer "spork-tests")
-(defvar es-last-command nil)
-
+(defvar spork-test-buffer "spork-tests"
+  "The name of the buffer tests will run in." )
 (defvar es-small-stack-trace t
-  "Hide .rvm (framework lines) from stack traces if t")
+  "Hide .rvm (framework lines) from stack traces if t.
+If this is false, you get the entire stack trace, which
+include a bunch of garbage lines and really clutter up
+the tests. Useless (but shouldn't hurt) if you're not
+using RVM.")
+(defvar es-use-emacs-buffer nil
+  "Send tests to an ansi-term buffer.")
+(defvar es-use-tmux-pane t
+  "Send tests to a tmux pane. I've found that output
+displays more reliably in a 'real' terminal than it does
+in an emacs buffer.")
+(defvar es-last-command nil
+  "Store the most recent command run so we can redo it." )
 
+;; es-singularize and es-pluralize thanks to:
 ;; https://github.com/jimm/elisp/blob/master/emacs.el
 (defun es-singularize (str)
   "Singularize STR, which is assumed to be a single word. This is
@@ -33,7 +44,6 @@ simple algorithm that may grow over time if needed."
           ((equal "us" (substring str (- len 2))) (concat (substring str 0 (- len 2)) "i"))
           (t (concat str "s")))))
 
-
 ; This sw-* stuff is from
 ;   http://curiousprogrammer.wordpress.com/2009/03/19/emacs-terminal-emulator/
 ; It takes care of getting ansi-term up and running, and returning to the same
@@ -41,7 +51,6 @@ simple algorithm that may grow over time if needed."
 
 ; sw-basic-shell is modified to open the buffer in another window, so that your
 ; tests pop up alongside the code.
-
 (defun sw-shell-get-process (buffer-name)
   (let ((buffer (get-buffer (concat "*" buffer-name "*"))))
     (and (buffer-live-p buffer) (get-buffer-process buffer))))
@@ -65,18 +74,25 @@ simple algorithm that may grow over time if needed."
   ;; create the new buffer
   (if (sw-shell-exists-p buffer-name)
       (message "Buffer already exists")
-    (ansi-term "bash" buffer-name))
-                                        ;  (switch-to-buffer-other-window (concat "*" buffer-name "*"))
-  )
+    (ansi-term "bash" buffer-name)))
 
 (defun sw-shell/commands (buffer-name &rest commands)
   (sw-basic-shell buffer-name)
   (let ((proc (sw-shell-get-process buffer-name)))
     (dolist (cmd commands)
-      ; (term-simple-send proc "clear")
-      ; (term-simple-send proc cmd)
-      (es-send-via-tmux cmd)
-      (setq es-last-command cmd))))
+      (term-simple-send proc "clear")
+      (term-simple-send proc cmd))))
+
+(defun es-send-command-somewhere (cmd)
+  "Send a command to a terminal. Can either send to
+an emacs buffer or to a tmux pane. Stores the command
+run for redo functionality."
+  (cond (es-use-emacs-buffer
+         (sw-shell/commands spork-test-buffer cmd))
+        (es-use-tmux-pane
+         (es-send-via-tmux cmd))
+        (t (message "Set a target for tests to run in.")))
+  (setq es-last-command cmd))
 
 (defun es-test-file (file-name)
   (interactive "FFile:")
@@ -84,28 +100,25 @@ simple algorithm that may grow over time if needed."
          (cond (es-small-stack-trace
                 (concat "testdrb " file-name " | grep -v .rvm"))
                (t (concat "testdrb " file-name)))))
-    (sw-shell/commands spork-test-buffer cmd)))
+    (es-send-command-somewhere cmd)))
 
 (defun es-send-via-tmux (command)
   (message (concat "running: " command))
-  (call-process "tmux" nil "*scratch*" nil "send-keys" "-t 1" command "C-m")
-  )
+  (call-process "tmux" nil "*scratch*" nil "send-keys" "-t 1" command "C-m"))
 
 (defun es-run-ruby-on-file (filename)
-  (es-send-via-tmux (concat "ruby " filename))
-  )
+  (es-send-via-tmux (concat "ruby " filename)))
 
 (defun es-send-to-tmux (cmd)
   (interactive "MCommand: ")
   (es-send-via-tmux (concat cmd))
-  (setq es-last-command cmd)
-  )
+  (setq es-last-command cmd))
 
 (defun es-run-ruby-on-current-file ()
   (interactive)
   (es-run-ruby-on-file buffer-file-name))
 
-; (es-send-via-tmux "echo hi")
+; (es-send-via-tmux "echo emacs rocks")
 (defun es-test-files (filenames)
   (es-test-file (mapconcat 'identity filenames " ")))
 
@@ -115,7 +128,7 @@ simple algorithm that may grow over time if needed."
 
 (defun es-redo-last-test ()
   (interactive)
-  (sw-shell/commands spork-test-buffer es-last-command))
+  (es-send-command-somewhere es-last-command))
 
 (defun es-run-unit-tests ()
   (interactive)
