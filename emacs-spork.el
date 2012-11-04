@@ -88,7 +88,7 @@ simple algorithm that may grow over time if needed."
 
 (defun es-send-via-tmux (command)
   (message (concat "running: " command))
-  (call-process "/usr/local/bin/tmux" nil "*scratch*" nil "send-keys" "-t 1" command "C-m")
+  (call-process "tmux" nil "*scratch*" nil "send-keys" "-t 1" command "C-m")
   )
 
 (defun es-run-ruby-on-file (filename)
