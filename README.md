@@ -39,6 +39,26 @@ While there is a nice simplicity in running your tests inside an emacs buffer, I
     (setq es-use-tmux-pane t)
     (setq es-use-emacs-buffer nil)
 
+If you'd like to pick which tmux session / window / pane the tests go to, configure the `es-tmux-target` variable.
+
+`es-tmux-target` Needs to be of a format accepted by tmux send-panes -t <value>
+
+You can find the right argument from tmux by using the list-panes function:
+
+$ tmux list-panes -as
+
+session_name:0.0: [118x65] [history 1/2000, 830 bytes] %11
+session_name:0.1: [118x65] [history 266/2000, 109035 bytes] %15 (active)
+session_name:1.0: [163x59] [history 5254/100000, 2171915 bytes] %14 (active)
+session_name:2.0: [171x52] [history 1943/2000, 937870 bytes] %10 (active)
+session_name:3.0: [257x58] [history 1976/2000, 686800 bytes] %9 (active)
+
+In my case, I have one tmux session running, called session_name, with 4 windows. Windows 1-3 have only one pane in each, while Window 0 has two panes. To use the second pane in window 0, I would do
+
+(setq es-tmux-target "session_name:0.1")
+
+See `man tmux` for more information.
+
 Run tests via ansi-term
 ----------
 
