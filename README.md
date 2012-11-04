@@ -55,7 +55,7 @@ You can find the right argument from tmux by using the list-panes function:
 
 In my case, I have one tmux session running, called session_name, with 4 windows. Windows 1-3 have only one pane in each, while Window 0 has two panes. To use the second pane in window 0, I would do
 
-(setq es-tmux-target "session_name:0.1")
+    (setq es-tmux-target "session_name:0.1")
 
 See `man tmux` for more information.
 
