@@ -98,6 +98,7 @@ simple algorithm that may grow over time if needed."
 (defun es-send-to-tmux (cmd)
   (interactive "MCommand: ")
   (es-send-via-tmux (concat cmd))
+  (setq es-last-command cmd)
   )
 
 (defun es-run-ruby-on-current-file ()
