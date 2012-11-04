@@ -22,6 +22,12 @@ Example config in .emacs
     (add-to-list 'load-path (expand-file-name "/path/to/emacs-spork"))
     (require 'emacs-spork)
 
+Some suggested keybindings, though C-c C-r conflicts with one of the `inf-ruby` defaults.
+
+    (global-set-key "\C-c\C-t" 'es-run-tests-for-current-file)
+    (global-set-key "\C-c\C-r" 'es-redo-last-test)
+
+
 Configuration
 ============
 
