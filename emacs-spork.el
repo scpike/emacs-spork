@@ -15,8 +15,16 @@ If this is false, you get the entire stack trace, which
 include a bunch of garbage lines and really clutter up
 the tests. Useless (but shouldn't hurt) if you're not
 using RVM.")
+(defvar es-colorize t
+  "Whether to use grep to colorize the output. testdrb removes
+  ansi color codes when it detects its output going to something
+  besides a tty (e.g., grep) so we have to re-color afterwards.")
 (defvar es-use-emacs-buffer nil
   "Send tests to an ansi-term buffer.")
+(defvar es-use-compile nil
+  "Send tests to a tmux pane. I've found that output
+displays more reliably in a 'real' terminal than it does
+in an emacs buffer.")
 (defvar es-use-tmux-pane t
   "Send tests to a tmux pane. I've found that output
 displays more reliably in a 'real' terminal than it does
@@ -44,7 +52,6 @@ second pane in window 0, I would do
 (setq es-tmux-target \"session_name:0.1\")
 
 See `man tmux` for more information.")
-
 
 ;; es-singularize and es-pluralize thanks to:
 ;; https://github.com/jimm/elisp/blob/master/emacs.el
@@ -109,19 +116,36 @@ simple algorithm that may grow over time if needed."
   "Send a command to a terminal. Can either send to
 an emacs buffer or to a tmux pane. Stores the command
 run for redo functionality."
-  (cond (es-use-emacs-buffer
+  (cond (es-use-compile
+         (es-send-via-compile cmd))
+        (es-use-emacs-buffer
          (sw-shell/commands spork-test-buffer cmd))
         (es-use-tmux-pane
          (es-send-via-tmux cmd))
         (t (message "Set a target for tests to run in.")))
   (setq es-last-command cmd))
 
+(defun es-send-via-compile (cmd)
+  "Compile the current command"
+  (compile cmd))
+
+(defun es-small-stack-trace-suffix ()
+  (cond (es-small-stack-trace " | grep -v .rvm")
+        (t "")))
+
+(defun es-colorize-suffix ()
+  (cond (es-colorize " | GREP_COLORS='mt=01;32' egrep --color=always 'PASS|' | GREP_COLORS='mt=01;31' egrep --color=always 'ERROR|FAIL|'")
+        (t "")))
+
+(defun es-command-suffix ()
+  (concat (es-small-stack-trace-suffix) (es-colorize-suffix)))
+
+(defun es-build-command (file-name)
+  (concat "testdrb " file-name (es-command-suffix)))
+
 (defun es-test-file (file-name)
   (interactive "FFile:")
-  (let ((cmd
-         (cond (es-small-stack-trace
-                (concat "testdrb " file-name " | grep -v .rvm"))
-               (t (concat "testdrb " file-name)))))
+  (let ((cmd (es-build-command file-name)))
     (es-send-command-somewhere cmd)))
 
 (defun es-send-via-tmux (command)
@@ -155,19 +179,19 @@ run for redo functionality."
 (defun es-run-unit-tests ()
   (interactive)
   (let ((default-directory (es-project-directory)))
-    (es-test-files (file-expand-wildcards "*test/unit/*rb" t))))
+    (es-test-files (file-expand-wildcards "*test/unit/*rb"))))
 ;; (es-run-unit-tests)
 
 (defun es-run-functional-tests ()
   (interactive)
   (let ((default-directory (es-project-directory)))
-    (es-test-files (file-expand-wildcards "*test/functional/*rb" t))))
+    (es-test-files (file-expand-wildcards "*test/functional/*rb"))))
 ;; (es-run-functional-tests)
 
 (defun es-run-data-file-tests ()
   (interactive)
   (let ((default-directory (es-project-directory)))
-    (es-test-files (file-expand-wildcards "*test/data_file_parsers/*rb" t))))
+    (es-test-files (file-expand-wildcards "*test/data_file_parsers/*rb"))))
 ;; (es-run-data-file-tests)
 
 (defun es-project-directory ()
@@ -225,16 +249,16 @@ folder being a directory with a folder called test in it."
   (let ((default-directory (es-project-directory)))
     (append
      (file-expand-wildcards (concat "test/*/"
-                                    (es-singularize model) "_test.rb") t))))
+                                    (es-singularize model) "_test.rb")))))
 
 (defun es-functional-test-for-model (model)
   (let ((default-directory (es-project-directory)))
     (append
      (file-expand-wildcards (concat "test/functional/"
-                                    model "_controller_test.rb") t)
+                                    model "_controller_test.rb"))
      (file-expand-wildcards (concat "test/functional/"
                                     (es-pluralize model)
-                                    "_controller_test.rb") t))))
+                                    "_controller_test.rb")))))
 
 (defun es-tests-for-model (model)
   "Return both the unit and functional tests associated with this model"
